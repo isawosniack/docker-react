@@ -1,0 +1,15 @@
+stages:
+  - test
+docker-test:
+  stage: test
+  image: docker
+  services:
+    - docker:dind
+  variables:
+    DOCKER_DRIVER: overlay2
+    DOCKER_TLS_CERTDIR: ""
+  before_script:
+    - docker info
+    - docker build -t iswo/docker-react -f Dockerfile.dev .
+  script:
+    - docker run -e CI=true iswo/docker-react npm run test
