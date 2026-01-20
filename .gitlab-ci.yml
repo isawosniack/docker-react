@@ -1,5 +1,7 @@
 stages:
   - test
+  - deploy
+
 docker-test:
   stage: test
   image: docker
@@ -9,7 +11,30 @@ docker-test:
     DOCKER_DRIVER: overlay2
     DOCKER_TLS_CERTDIR: ""
   before_script:
-    - docker info
     - docker build -t iswo/docker-react -f Dockerfile.dev .
   script:
     - docker run -e CI=true iswo/docker-react npm run test
+
+deploy-production:
+  stage: deploy
+  image: amazon/aws-cli:2
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "master"'
+  script:
+    # Package the application
+    - yum install -y zip
+    - zip -r frontend.zip . -x ".git/*" "node_modules/*"
+
+    # Upload artifact to S3
+    - aws s3 cp frontend.zip s3://elasticbeanstalk-eu-north-1-644729817628/frontend/frontend.zip
+
+    # Create a new Elastic Beanstalk application version
+    - aws elasticbeanstalk create-application-version \
+        --application-name frontend \
+        --version-label "$CI_COMMIT_SHA" \
+        --source-bundle S3Bucket=elasticbeanstalk-eu-north-1-644729817628,S3Key=frontend/frontend.zip
+
+    # Deploy the version
+    - aws elasticbeanstalk update-environment \
+        --environment-name Frontend-env \
+        --version-label "$CI_COMMIT_SHA"
