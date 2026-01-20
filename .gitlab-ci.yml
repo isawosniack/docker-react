@@ -31,12 +31,7 @@ deploy-production:
     - aws s3 cp frontend.zip s3://elasticbeanstalk-eu-north-1-644729817628/frontend/frontend.zip
 
     # Create a new Elastic Beanstalk application version
-    - aws elasticbeanstalk create-application-version \
-        --application-name frontend \
-        --version-label "$CI_COMMIT_SHA" \
-        --source-bundle S3Bucket=elasticbeanstalk-eu-north-1-644729817628,S3Key=frontend/frontend.zip
+    - aws elasticbeanstalk create-application-version --application-name frontend --version-label "$CI_COMMIT_SHA" --source-bundle S3Bucket=elasticbeanstalk-eu-north-1-644729817628,S3Key=frontend/frontend.zip
 
     # Deploy the version
-    - aws elasticbeanstalk update-environment \
-        --environment-name Frontend-env \
-        --version-label "$CI_COMMIT_SHA"
+    - aws elasticbeanstalk update-environment --environment-name Frontend-env --version-label "$CI_COMMIT_SHA"
