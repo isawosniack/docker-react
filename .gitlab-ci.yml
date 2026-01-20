@@ -17,7 +17,7 @@ docker-test:
 
 deploy-production:
   stage: deploy
-  image: amazon/aws-cli:2
+  image: amazon/aws-cli
   rules:
     - if: '$CI_COMMIT_BRANCH == "master"'
   script:
